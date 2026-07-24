@@ -168,8 +168,14 @@ def render_completion_screen():
     with col_reset:
         if st.button("🔄 新しく文を作る", type="primary", use_container_width=True):
             reset_session_state()
+            
+            # テキストエリアの「前回の記憶」を強制的に消去し、例文を再抽選させる
+            keys_to_clear = ["input_text_key", "stt_goal_output", "random_preset"]
+            for key in keys_to_clear:
+                if key in st.session_state:
+                    del st.session_state[key]
+                    
             st.rerun()
             
     with col_share:
-        # st.link_button を使うと、別タブでURLを開いてくれる
         st.link_button("𝕏 でシェアする", url=twitter_share_url, use_container_width=True)
