@@ -151,16 +151,23 @@ def render_completion_screen():
 
     st.write("---")
     
-    # 📱 SNSシェア用のテキストを作成
+    # 🌐 アプリのURL（本番環境に公開したら、ここにそのURLを入れます）
+    app_url = "https://wordflow-english.streamlit.app/" 
+    
+    # SNSシェア用のテキストを作成
     tweet_text = (
         f"🧩 WordFlow Englishでパズルを完成させたよ！\n\n"
         f"🎯 {st.session_state.japanese_goal}\n"
         f"✍️ {final_sentence}\n\n"
-        f"#WordFlowEnglish #英語学習"
+        f"#WordFlowEnglish #英語学習\n"
     )
-    # URLエンコード（日本語をURLで送れる形式に変換）
+    
+    # URLエンコード（日本語や記号をURLで送れる形式に変換）
     encoded_text = urllib.parse.quote(tweet_text)
-    twitter_share_url = f"https://twitter.com/intent/tweet?text={encoded_text}"
+    encoded_url = urllib.parse.quote(app_url)
+    
+    # 🔗 Xのシェア用URLを生成
+    twitter_share_url = f"https://twitter.com/intent/tweet?text={encoded_text}&url={encoded_url}"
     
     # 📱 スマホ対応: 均等2列にして「新しく作る」と「シェア」を並べる
     col_reset, col_share = st.columns(2)
