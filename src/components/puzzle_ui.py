@@ -1,21 +1,40 @@
 import streamlit as st
 import urllib.parse
-from src.llm_engine import ask_local_llm, generate_feedback
+from src.llm_engine import ask_local_llm, generate_feedback, recalculate_correct_sentence
 from src.state_manager import reset_session_state
 
 def _update_state(llm):
-    next_index = len(st.session_state.current_sentence)
+    current_sentence = st.session_state.current_sentence
     correct_words = st.session_state.get("correct_words", [])
 
+    # 🚗 1. ルートチェック（ユーザーの入力が正解レールから外れていないか？）
+    is_on_route = True
+    for i, word in enumerate(current_sentence):
+        # 1単語ずつ比較し、大文字小文字の違いを無視してチェック
+        if i >= len(correct_words) or word.lower() != correct_words[i].lower():
+            is_on_route = False
+            break
+
+    # 🔄 2. ルートを外れたらカーナビ発動！（自動リルート）
+    if not is_on_route and len(current_sentence) > 0:
+        with st.spinner("AIがルートを再計算中... 🔄"):
+            new_correct_words = recalculate_correct_sentence(llm, st.session_state.japanese_goal, current_sentence)
+            st.session_state.correct_words = new_correct_words
+            correct_words = new_correct_words
+            st.toast("ルートが再計算されました！🔄", icon="🤖") # 画面右下に小さく通知を出す
+
+    # 🎯 3. 次の正解単語の取得
+    next_index = len(current_sentence)
     if next_index < len(correct_words):
         next_correct = correct_words[next_index]
     else:
         next_correct = None 
 
+    # 🧩 4. 通常の翻訳とダミー生成
     with st.spinner("AIが翻訳・準備中..."):
         res = ask_local_llm(
             llm,
-            st.session_state.current_sentence,
+            current_sentence,
             st.session_state.japanese_goal,
             correct_next_word=next_correct
         )
@@ -156,7 +175,6 @@ def render_completion_screen():
     st.markdown(f"<div style='font-size: 28px; font-weight: bold; color: #1E88E5; padding: 10px 0;'>{final_sentence}</div>", unsafe_allow_html=True)
     
     st.markdown("### 👩‍🏫 AI先生からの講評")
-    # 「【」の前に空行を挿入して、綺麗な段落(Markdown)にする
     formatted_feedback = st.session_state.feedback.replace("【", "\n\n【").strip()
     st.info(formatted_feedback)
 
