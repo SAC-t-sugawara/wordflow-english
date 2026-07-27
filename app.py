@@ -9,34 +9,27 @@ st.markdown("""
 /* 邪魔なアンカーリンク（鎖マーク）を非表示 */
 .st-emotion-cache-1wqtbno { display: none !important; }
 
-/* 💻 【PC用】画面幅が768px以上の時 */
-@media (min-width: 768px) {
-    .stApp { background-color: #e2e8f0 !important; }
+/* 背景全体を少し暗いグレーにして、アプリを目立たせる */
+.stApp { background-color: #e2e8f0 !important; }
+
+/* 📱💻 【全端末共通】アプリのメイン画面（白い枠）の設定 */
+[data-testid="stAppViewBlockContainer"] {
+    /* 👇 🔧 ここで横幅を調整します！(400px〜500pxがお好みなら書き換えてください) */
+    max-width: 450px !important; 
     
-    /* 👇 最新Streamlitで確実に幅を広げるための「データ属性」を使った指定 */
-    [data-testid="stAppViewBlockContainer"] {
-        max-width: 600px !important; /* 👈 ここでPCの時の幅を決定！ */
-        width: 90% !important;
-        background-color: #ffffff !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
-        border-radius: 20px !important; 
-        margin-top: 40px !important;
-        margin-bottom: 40px !important;
-        padding: 3rem 4rem !important; /* 上下左右の余白 */
-    }
+    width: 100% !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 20px !important; 
+    margin-top: 20px !important;
+    margin-bottom: 20px !important;
+    padding: 1.5rem 1.5rem !important; /* 内側の余白 */
 }
 
-/* 📱 【スマホ用】画面幅が767px以下の時 */
-@media (max-width: 767px) {
-    [data-testid="stAppViewBlockContainer"] {
-        max-width: 100% !important;
-        width: 100% !important;
-        padding: 1rem 1rem !important;
-        background-color: transparent !important;
-    }
-    h3 { font-size: 18px !important; margin-bottom: -10px !important; }
-}
+/* 見出しのサイズと余白の調整 */
+h3 { font-size: 18px !important; margin-bottom: -10px !important; }
 
+/* ボタンなどが縦に並ぶときの隙間をギュッと詰める */
 div[data-testid="stVerticalBlock"] > div { gap: 0.5rem !important; }
 </style>
 """, unsafe_allow_html=True)
