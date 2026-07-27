@@ -3,45 +3,36 @@ import logging
 import asyncio
 import streamlit as st
 
-# 🌟 layout="wide" に変更して、CSS側で幅を完全コントロールする
 st.set_page_config(page_title="WordFlow English", page_icon="🧩", layout="wide")
-
 st.markdown("""
 <style>
 /* 邪魔なアンカーリンク（鎖マーク）を非表示 */
 .st-emotion-cache-1wqtbno { display: none !important; }
 
-/* 📱 共通設定 */
-div.block-container {
-    padding-top: 1rem !important;
-    padding-bottom: 1rem !important;
-    background-color: #ffffff;
-}
-
 /* 💻 【PC用】画面幅が768px以上の時 */
 @media (min-width: 768px) {
-    .stApp { background-color: #e2e8f0; }
+    .stApp { background-color: #e2e8f0 !important; }
     
-    /* 👇 ここを強制的に広げるように強化！ */
-    div.block-container {
-        width: 100% !important;
-        max-width: 800px !important; 
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        border-radius: 20px; 
-        margin-top: 30px;
-        margin-bottom: 30px;
-        padding-left: 4rem !important;
-        padding-right: 4rem !important;
+    /* 👇 最新Streamlitで確実に幅を広げるための「データ属性」を使った指定 */
+    [data-testid="stAppViewBlockContainer"] {
+        max-width: 1000px !important; /* 👈 ここでPCの時の幅を決定！(1000pxでかなり広くなります) */
+        width: 90% !important;
+        background-color: #ffffff !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+        border-radius: 20px !important; 
+        margin-top: 40px !important;
+        margin-bottom: 40px !important;
+        padding: 3rem 4rem !important; /* 上下左右の余白 */
     }
 }
 
 /* 📱 【スマホ用】画面幅が767px以下の時 */
 @media (max-width: 767px) {
-    div.block-container {
-        width: 100% !important;
+    [data-testid="stAppViewBlockContainer"] {
         max-width: 100% !important;
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
+        width: 100% !important;
+        padding: 1rem 1rem !important;
+        background-color: transparent !important;
     }
     h3 { font-size: 18px !important; margin-bottom: -10px !important; }
 }
