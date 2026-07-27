@@ -156,7 +156,9 @@ def render_completion_screen():
     st.markdown(f"<div style='font-size: 28px; font-weight: bold; color: #1E88E5; padding: 10px 0;'>{final_sentence}</div>", unsafe_allow_html=True)
     
     st.markdown("### 👩‍🏫 AI先生からの講評")
-    st.info(f"{st.session_state.feedback}")
+    # 「【」の前に空行を挿入して、綺麗な段落(Markdown)にする
+    formatted_feedback = st.session_state.feedback.replace("【", "\n\n【").strip()
+    st.info(formatted_feedback)
 
     st.write("---")
     
