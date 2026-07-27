@@ -150,6 +150,53 @@ English: """
         
     return words if words else ["I want to", "try this."]
 
+def recalculate_correct_sentence(client_obj, japanese_goal, current_sentence_words):
+    """ルートから外れた場合に、現在の入力から始まる新しい正解レールを引き直す"""
+    current_str = " ".join(current_sentence_words)
+    
+    prompt = f"""Translate Japanese to English. 
+The user is translating "{japanese_goal}".
+They have already typed: "{current_str}"
+
+Output the FULL English sentence that naturally continues and completes their thought.
+You MUST start your sentence exactly with "{current_str}".
+Divide into natural chunks (1-3 words) using the pipe character '|'.
+Output ONLY the text with '|'. No explanation.
+
+Example:
+Goal: 私は昨日ピザを食べた
+Typed: Yesterday I
+Output: Yesterday I | ate | a pizza.
+
+Goal: {japanese_goal}
+Typed: {current_str}
+Output: """
+    
+    try:
+        response = client_obj.models.generate_content(
+            model=MODEL_NAME,
+            contents=prompt,
+            config=types.GenerateContentConfig(temperature=0.2, max_output_tokens=80)
+        )
+        sentence = response.text.strip().strip('"\'')
+    except Exception as e:
+        error_logger.error(f"Gemini API Error (recalculate_correct_sentence): {e}")
+        # エラー時は今の状態を保持してフェイルセーフ
+        return current_sentence_words + ["(Error)"]
+
+    if "|" in sentence:
+        words = [chunk.strip() for chunk in sentence.split("|") if chunk.strip()]
+    else:
+        words = sentence.split()
+        
+    log_event(
+        process_name="recalculate_correct_sentence",
+        input_data={"japanese_goal": japanese_goal, "typed": current_str},
+        output_data={"raw_sentence": sentence, "chunks": words}
+    )
+        
+    return words
+
 def _translate_current(client_obj, sentence_words: list) -> str:
     if not sentence_words:
         return "（まだ入力なし）"
@@ -283,3 +330,4 @@ Teacher: """
     )
 
     return feedback
+
