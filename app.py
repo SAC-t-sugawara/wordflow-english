@@ -4,6 +4,7 @@ import asyncio
 import streamlit as st
 
 st.set_page_config(page_title="WordFlow English", page_icon="🧩", layout="wide")
+
 st.markdown("""
 <style>
 /* 邪魔なアンカーリンク（鎖マーク）を非表示 */
@@ -13,17 +14,15 @@ st.markdown("""
 .stApp { background-color: #e2e8f0 !important; }
 
 /* 📱💻 【全端末共通】アプリのメイン画面（白い枠）の設定 */
-[data-testid="stAppViewBlockContainer"] {
-    /* 👇 🔧 ここで横幅を調整します！(400px〜500pxがお好みなら書き換えてください) */
-    max-width: 450px !important; 
+.block-container {
+    max-width: 450px !important; /* 👈 ここで横幅を調整します */
     
-    width: 100% !important;
+    margin: 30px auto !important; /* 👈 【修正】これを追加！左右の余白を均等にして「完全な中央寄せ」にする魔法です！ */
+    
     background-color: #ffffff !important;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
     border-radius: 20px !important; 
-    margin-top: 20px !important;
-    margin-bottom: 20px !important;
-    padding: 1.5rem 1.5rem !important; /* 内側の余白 */
+    padding: 2rem 1.5rem !important; /* 内側の余白 */
 }
 
 /* 見出しのサイズと余白の調整 */
