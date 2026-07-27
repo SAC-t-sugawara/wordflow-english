@@ -164,24 +164,25 @@ def render_completion_screen():
     """, unsafe_allow_html=True)
 
     st.balloons()
-    st.success("🎉 お疲れ様でした！パズル完了です。")
+    st.success("🎉 Great job! Puzzle completed.")
     
-    st.markdown("### 🎯 言いたいこと (目標)")
+    st.markdown("### 🎯 Goal")
     st.markdown(f"> {st.session_state.japanese_goal}")
     
     final_sentence = ' '.join(st.session_state.current_sentence)
     
-    st.markdown("### ✍️ あなたが作った英文")
+    st.markdown("### ✍️ Your Sentence")
     st.markdown(f"<div style='font-size: 28px; font-weight: bold; color: #1E88E5; padding: 10px 0;'>{final_sentence}</div>", unsafe_allow_html=True)
     
-    st.markdown("### 👩‍🏫 AI先生からの講評")
+    st.markdown("### 👩‍🏫 Feedback from AI Teacher")
     formatted_feedback = st.session_state.feedback.replace("【", "\n\n【").strip()
     st.info(formatted_feedback)
 
     st.write("---")
     
     app_url = "https://wordflow-english.streamlit.app/" 
-    tweet_text = f"🧩 WordFlow Englishでパズルを完成させたよ！\n\n🎯 {st.session_state.japanese_goal}\n✍️ {final_sentence}\n\n#WordFlowEnglish #英語学習\n"
+    
+    tweet_text = f"🧩 I just completed a puzzle on WordFlow English!\n\n🎯 {st.session_state.japanese_goal}\n✍️ {final_sentence}\n\n#WordFlowEnglish #LanguageLearning\n"
     encoded_text = urllib.parse.quote(tweet_text)
     encoded_url = urllib.parse.quote(app_url)
     twitter_share_url = f"https://twitter.com/intent/tweet?text={encoded_text}&url={encoded_url}"
@@ -189,7 +190,7 @@ def render_completion_screen():
     col_reset, col_share = st.columns(2)
     
     with col_reset:
-        if st.button("🔄 新しく文を作る", type="primary", use_container_width=True):
+        if st.button("🔄 Create New", type="primary", use_container_width=True):
             reset_session_state()
             keys_to_clear = ["input_text_key", "stt_goal_output", "random_preset"]
             for key in keys_to_clear:
@@ -198,4 +199,4 @@ def render_completion_screen():
             st.rerun()
             
     with col_share:
-        st.link_button("𝕏 でシェアする", url=twitter_share_url, use_container_width=True)
+        st.link_button("𝕏 Share", url=twitter_share_url, use_container_width=True)
