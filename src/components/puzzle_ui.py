@@ -108,34 +108,34 @@ def render_puzzle_area(llm):
     
     with col_undo:
         disabled_undo = len(st.session_state.current_sentence) == 0
-        if st.button("⏪ 戻る", use_container_width=True, disabled=disabled_undo):
+        if st.button("⏪ Undo", use_container_width=True, disabled=disabled_undo):
             st.session_state.current_sentence.pop()
             _update_state(llm)
             st.rerun()
             
     with col_hint:
-        hint_label = "💡 隠す" if st.session_state.show_ghost else "💡 ヒント"
+        hint_label = "💡 Hide Hint" if st.session_state.show_ghost else "💡 Hint"
         if st.button(hint_label, use_container_width=True):
             st.session_state.show_ghost = not st.session_state.show_ghost
             st.rerun()
 
     with col_complete:
         disabled_complete = len(st.session_state.current_sentence) == 0
-        if st.button("🏁 完成！", type="primary", use_container_width=True, disabled=disabled_complete):
-            with st.spinner("AI先生が採点中..."):
+        if st.button("🏁 Finish!", type="primary", use_container_width=True, disabled=disabled_complete):
+            with st.spinner("AI Teacher is grading..."):
                 feedback = generate_feedback(llm, st.session_state.japanese_goal, st.session_state.current_sentence)
                 st.session_state.feedback = feedback
             st.session_state.step = 2
             st.rerun()
 
     # 手動追加ポップオーバー
-    with st.popover("➕ 自由に単語を追加", use_container_width=True):
+    with st.popover("➕ Add Word Manually", use_container_width=True):
         with st.form("manual_input_form", clear_on_submit=True):
             cols_form = st.columns([3, 1]) 
             with cols_form[0]:
-                manual_word = st.text_input("追加", placeholder="例: very", label_visibility="collapsed")
+                manual_word = st.text_input("Add", placeholder="e.g. very", label_visibility="collapsed")
             with cols_form[1]:
-                submit_btn = st.form_submit_button("追加", use_container_width=True)
+                submit_btn = st.form_submit_button("Add", use_container_width=True)
             if submit_btn and manual_word.strip():
                 st.session_state.current_sentence.extend(manual_word.strip().split())
                 _update_state(llm)
