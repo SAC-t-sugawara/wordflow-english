@@ -7,21 +7,20 @@ def _update_state(llm):
     current_sentence = st.session_state.current_sentence
     correct_words = st.session_state.get("correct_words", [])
 
-    # 🚗 1. ルートチェック（ユーザーの入力が正解レールから外れていないか？）
+    # 🚗 1. ルートチェック
     is_on_route = True
     for i, word in enumerate(current_sentence):
-        # 1単語ずつ比較し、大文字小文字の違いを無視してチェック
         if i >= len(correct_words) or word.lower() != correct_words[i].lower():
             is_on_route = False
             break
 
     # 🔄 2. ルートを外れたらカーナビ発動！（自動リルート）
     if not is_on_route and len(current_sentence) > 0:
-        with st.spinner("AIがルートを再計算中... 🔄"):
+        with st.spinner("AI is recalculating route... 🔄"):
             new_correct_words = recalculate_correct_sentence(llm, st.session_state.japanese_goal, current_sentence)
             st.session_state.correct_words = new_correct_words
             correct_words = new_correct_words
-            st.toast("ルートが再計算されました！🔄", icon="🤖") # 画面右下に小さく通知を出す
+            st.toast("Route recalculated! 🔄", icon="🤖") 
 
     # 🎯 3. 次の正解単語の取得
     next_index = len(current_sentence)
@@ -31,7 +30,7 @@ def _update_state(llm):
         next_correct = None 
 
     # 🧩 4. 通常の翻訳とダミー生成
-    with st.spinner("AIが翻訳・準備中..."):
+    with st.spinner("AI is translating & preparing..."):
         res = ask_local_llm(
             llm,
             current_sentence,
@@ -73,7 +72,6 @@ def render_puzzle_area(llm):
     current_str = " ".join(st.session_state.current_sentence)
     ghost_display = st.session_state.ghost_text if st.session_state.show_ghost else ""
 
-    # 💡 枠のパディングとマージンを小さくしてスリム化
     sentence_html = f"""
     <div style="font-size: 24px; padding: 12px; background-color: #f8fafc;
                 border-radius: 12px; border: 2px solid #cbd5e1; margin-bottom: 10px;
@@ -103,7 +101,7 @@ def render_puzzle_area(llm):
                         _update_state(llm)
                         st.rerun()
 
-    # 🌟 アクションボタンを3列に整理（戻る / ヒント / 完成）
+    # 🌟 アクションボタン
     col_undo, col_hint, col_complete = st.columns(3)
     
     with col_undo:
@@ -142,7 +140,6 @@ def render_puzzle_area(llm):
                 st.rerun()
 
 def render_completion_screen():
-    # 🌟 シェアボタンの高さを赤ボタンに合わせるCSS
     st.markdown("""
     <style>
     a[data-testid="stLinkButton"] {
