@@ -49,7 +49,7 @@ API_KEY = None
 try:
     API_KEY = st.secrets.get("GEMINI_API_KEY")
 except Exception:
-    pass # secrets.tomlが見つからない場合はスルー
+    pass
 
 if not API_KEY:
     API_KEY = os.environ.get("GEMINI_API_KEY")
@@ -61,8 +61,7 @@ if not API_KEY:
 # 最新のGenAIクライアントの初期化
 client = genai.Client(api_key=API_KEY)
 
-
-# 🌟 モデル名の安全な読み込み（環境変数 or secrets.toml）
+# 🌟 モデル名の安全な読み込み
 MODEL_NAME = None
 try:
     MODEL_NAME = st.secrets.get("GEMINI_MODEL_NAME")
@@ -72,7 +71,6 @@ except Exception:
 if not MODEL_NAME:
     MODEL_NAME = os.environ.get("GEMINI_MODEL_NAME")
 
-# もし設定ファイルに書き忘れていた場合のデフォルト値（保険）
 if not MODEL_NAME:
     MODEL_NAME = "gemini-3.5-flash"
     print(f"⚠️ モデル名が設定されていないため、デフォルト({MODEL_NAME})を使用します")
@@ -82,8 +80,35 @@ if not MODEL_NAME:
 def load_model():
     return client
 
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 🤖 新規追加: LLMによる動的ダミー生成関数
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+def generate_dynamic_distractors(client_obj, correct_word: str, japanese_goal: str) -> list:
+    """LLMに文脈に合ったダミー単語(チャンク)を5つ考えさせる"""
+    prompt = f"""
+    あなたは英語学習アプリの優秀な問題作成者です。
+    ユーザーは「{japanese_goal}」という日本語を英訳しようとしています。
+    次に選ぶべき正解の単語（またはチャンク）は「{correct_word}」です。
+    
+    この正解と似た品詞、文法、文字数で、学習者が思わず間違えて選びそうな「ダミーの選択肢」を正確に5つ考えてください。
+    ※必ず英語のみ、カンマ区切りで出力してください。説明は一切不要です。
+    例: liked, wanting, have to, see, taking
+    """
+    try:
+        response = client_obj.models.generate_content(
+            model=MODEL_NAME,
+            contents=prompt,
+            config=types.GenerateContentConfig(temperature=0.7, max_output_tokens=30)
+        )
+        words = [w.strip() for w in response.text.split(",") if w.strip()]
+        return words
+    except Exception as e:
+        error_logger.error(f"Gemini API Error (generate_dynamic_distractors): {e}")
+        return []
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 def generate_correct_sentence(client_obj, japanese_goal):
-    """日本語の目標から、チャンク（塊）に区切られた正解の英文リストを生成する"""
     prompt = f"""Translate Japanese to English. Output the English sentence divided into natural chunks (1-3 words) using the pipe character '|'. Output ONLY the text with '|'. No explanation.
 
 Example 1:
@@ -126,7 +151,6 @@ English: """
     return words if words else ["I want to", "try this."]
 
 def _translate_current(client_obj, sentence_words: list) -> str:
-    """現在の英語の入力途中経過を日本語に翻訳する"""
     if not sentence_words:
         return "（まだ入力なし）"
 
@@ -172,23 +196,30 @@ Japanese: """
 
 def ask_local_llm(client_obj, sentence, japanese_goal, correct_next_word: str | None = None):
     """パズル画面で表示する候補（ダミー含む）とヒント、現在の翻訳を返す"""
-    distractors = get_distractors(correct_next_word or "")
-
     if correct_next_word:
         key = correct_next_word.lower()
+        
+        # 🌟 1. まずはLLMに「文脈に合ったダミー」を作らせてみる
+        distractors = generate_dynamic_distractors(client_obj, key, japanese_goal)
+        
+        # 🌟 2. もしLLMが失敗した（または数が足りない）場合は、従来の辞書を使う
+        if len(distractors) < 5:
+            distractors = get_distractors(correct_next_word)
+            
+        # 自分がダミーに入らないように除外し、確実に5つにする
         distractors = [w for w in distractors if w.lower() != key]
-        extras = [
-            "am", "going to", "wanting to", "in the", "for a", "at the", 
-            "do not", "can see", "be with", "looking at", "made of", "by the"
-        ]
+        
+        # もしそれでも足りなければ適当な単語を足す（フェイルセーフ）
+        extras = ["the", "a", "is", "to", "in", "do", "have"]
         for w in extras:
-            if len(distractors) >= 4:
+            if len(distractors) >= 5:
                 break
             if w.lower() != key and w not in distractors:
                 distractors.append(w)
-        candidates = distractors[:4] + [correct_next_word]
+                
+        candidates = distractors[:5] + [correct_next_word]
     else:
-        candidates = distractors[:4] + ["(完成！)"]
+        candidates = get_distractors("")[:5] + ["(完成！)"]
 
     random.shuffle(candidates)
 
@@ -211,7 +242,6 @@ def ask_local_llm(client_obj, sentence, japanese_goal, correct_next_word: str | 
     }
 
 def generate_feedback(client_obj, japanese_goal, sentence_words):
-    """ユーザーが作った英文を評価し、日本語で講評を返す"""
     user_sentence = " ".join(sentence_words)
     if not user_sentence:
         return "英文が入力されていません。次は単語を選んで文を作ってみましょう！"
@@ -228,14 +258,6 @@ Teacher:
 【評価】70点！惜しいです。
 【解説】「want go」ではなく間に「to」を入れて「want to go」にしましょう。また映画には「a movie」と冠詞をつけると自然です。
 【模範解答】I want to go see a movie today.
-
-Example 2:
-Goal: 美味しいピザが食べたい
-Sentence: happy dog and cat
-Teacher:
-【評価】0点！全く違う意味になっています。
-【解説】「happy dog and cat」は「幸せな犬と猫」という意味になってしまいます。「美味しいピザが食べたい」は英語で「I want to eat delicious pizza.」と言います。
-【模範解答】I want to eat delicious pizza.
 
 Goal: {japanese_goal}
 Sentence: {user_sentence}
