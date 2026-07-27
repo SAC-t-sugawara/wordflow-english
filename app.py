@@ -15,7 +15,7 @@ st.markdown("""
 
 /* 📱💻 【全端末共通】アプリのメイン画面（白い枠）の設定 */
 .block-container {
-    max-width: 450px !important; /* 👈 ここで横幅を調整します */
+    max-width: 550px !important; /* 👈 ここで横幅を調整します */
     
     margin: 30px auto !important; /* 👈 【修正】これを追加！左右の余白を均等にして「完全な中央寄せ」にする魔法です！ */
     
