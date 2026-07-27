@@ -15,7 +15,7 @@ st.markdown("""
     
     /* 👇 最新Streamlitで確実に幅を広げるための「データ属性」を使った指定 */
     [data-testid="stAppViewBlockContainer"] {
-        max-width: 1000px !important; /* 👈 ここでPCの時の幅を決定！(1000pxでかなり広くなります) */
+        max-width: 600px !important; /* 👈 ここでPCの時の幅を決定！ */
         width: 90% !important;
         background-color: #ffffff !important;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
