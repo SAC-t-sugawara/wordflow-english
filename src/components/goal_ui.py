@@ -129,9 +129,19 @@ def render_input_form(llm):
         with col_btn:
             submit_btn = st.button("Create Puzzle 🧩", type="primary", use_container_width=True, disabled=(source_lang == target_lang))
 
-    if text_from_mic:
-        st.session_state.stt_goal_output = text_from_mic
-        st.rerun()
+    # 🎤 マイク入力の結果をテキストエリアに反映する
+    if st.session_state.get('stt_goal_output'):
+        st.session_state.input_text_key = st.session_state.stt_goal_output
+        del st.session_state['stt_goal_output']
+
+    with st.container(border=True):
+        st.text_area(
+            "Text Input", 
+            height=100,
+            label_visibility="collapsed",
+            placeholder=f"Please enter {source_lang.split(' ')[0]} here...",
+            key="input_text_key"  
+        )
 
     if submit_btn:
         latest_goal = st.session_state.input_text_key
