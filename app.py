@@ -7,29 +7,37 @@ st.set_page_config(page_title="WordFlow English", page_icon="🧩", layout="wide
 
 st.markdown("""
 <style>
-/* 邪魔なアンカーリンク（鎖マーク）を非表示 */
 .st-emotion-cache-1wqtbno { display: none !important; }
-
-/* 背景全体を少し暗いグレーにして、アプリを目立たせる */
 .stApp { background-color: #e2e8f0 !important; }
 
-/* 📱💻 【全端末共通】アプリのメイン画面（白い枠）の設定 */
 .block-container {
-    max-width: 550px !important; /* 👈 ここで横幅を調整します */
-    
-    margin: 30px auto !important; /* 👈 【修正】これを追加！左右の余白を均等にして「完全な中央寄せ」にする魔法です！ */
-    
+    max-width: 450px !important;
+    margin: 30px auto !important;
     background-color: #ffffff !important;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
     border-radius: 20px !important; 
-    padding: 2rem 1.5rem !important; /* 内側の余白 */
+    padding: 2rem 1.5rem !important;
 }
 
-/* 見出しのサイズと余白の調整 */
 h3 { font-size: 18px !important; margin-bottom: -10px !important; }
-
-/* ボタンなどが縦に並ぶときの隙間をギュッと詰める */
 div[data-testid="stVerticalBlock"] > div { gap: 0.5rem !important; }
+
+/* 📱 columnsを常に横並びに固定（flex-direction上書きが核心） */
+div[data-testid="stHorizontalBlock"] {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+}
+div[data-testid="stHorizontalBlock"] > div[data-testid="stVerticalBlock"] {
+    min-width: 0 !important;
+    width: 100% !important;
+    flex: 1 1 0px !important;
+}
+div[data-testid="stSelectbox"] label,
+div[data-testid="stSelectbox"] div {
+    font-size: 13px !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
