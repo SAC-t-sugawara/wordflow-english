@@ -81,45 +81,43 @@ def render_input_form(llm):
     if source_lang == target_lang:
         st.warning("⚠️ Input and Puzzle languages are the same. Please select different languages.")
 
-    # === (上のプルダウン設定のコードはそのまま) ===
-
-    # 選択された言語をセッションに保存（llm_engineで使います）
+    # 選択された言語をセッションに保存
     st.session_state.source_lang = source_lang
 
     # 選択された入力言語に合わせてランダム例文をセット
     if "current_preset_lang" not in st.session_state or st.session_state.current_preset_lang != source_lang:
-        # 言語が変わったので新しい例文を抽選
         new_preset = random.choice(PRESETS[source_lang])
         st.session_state.random_preset = new_preset
         st.session_state.current_preset_lang = source_lang 
+        st.session_state.input_text_key = new_preset  # text_area の値として初期セット
         
-        # テキストエリアの「記憶」を強制的に新しい例文で上書きする！
-        st.session_state.input_text_key = new_preset
-        
-        # マイク入力の記憶が残っていればそれも消す
         if 'stt_goal_output' in st.session_state:
             del st.session_state['stt_goal_output']
 
+    # 🎤 マイク入力の結果をテキストエリアのキーに反映
+    if st.session_state.get('stt_goal_output'):
+        st.session_state.input_text_key = st.session_state.stt_goal_output
+        del st.session_state['stt_goal_output']
+
+    # 統合したコンテナ
     with st.container(border=True):
-        # value の指定を少しシンプルにします
         st.text_area(
             "Text Input", 
             height=100,
             label_visibility="collapsed",
             placeholder=f"Please enter {source_lang.split(' ')[0]} here...",
-            key="input_text_key"  
+            key="input_text_key"  # ここは1箇所のみ
         )
-
 
         col_mic, col_btn = st.columns(2)
         with col_mic:
-            # マイクの言語コードを判定
             mic_lang = 'ja'
             if "English" in source_lang: mic_lang = 'en'
             elif "Chinese" in source_lang: mic_lang = 'zh'
             elif "Korean" in source_lang: mic_lang = 'ko'
 
-            text_from_mic = speech_to_text(
+            # 録音ボタンの設置
+            speech_to_text(
                 language=mic_lang,
                 start_prompt="🎤 Voice Input", 
                 stop_prompt="⏹️ Recording...", 
@@ -129,35 +127,19 @@ def render_input_form(llm):
         with col_btn:
             submit_btn = st.button("Create Puzzle 🧩", type="primary", use_container_width=True, disabled=(source_lang == target_lang))
 
-    # 🎤 マイク入力の結果をテキストエリアに反映する
-    if st.session_state.get('stt_goal_output'):
-        st.session_state.input_text_key = st.session_state.stt_goal_output
-        del st.session_state['stt_goal_output']
-
-    with st.container(border=True):
-        st.text_area(
-            "Text Input", 
-            height=100,
-            label_visibility="collapsed",
-            placeholder=f"Please enter {source_lang.split(' ')[0]} here...",
-            key="input_text_key"  
-        )
-
+    # ボタンが押された後のロジック
     if submit_btn:
         latest_goal = st.session_state.input_text_key
         if not latest_goal.strip():
             st.warning("⚠️ Please enter some text!")
             st.stop()
 
-        # 変数名は「japanese_goal」のまま使いますが、中身は英語や中国語が入ります
         st.session_state.japanese_goal = latest_goal 
         st.session_state.current_sentence = []
         st.session_state.show_ghost = False
 
-        tgt_short = target_lang.split(' ')[0] # "English" などを取り出す
+        tgt_short = target_lang.split(' ')[0]
         with st.spinner(f"AI is preparing the {tgt_short} puzzle..."):
-            
-            # ⚠️ 注意: ここはまだ修正前の関数呼び出しです。後で llm_engine.py 側を多言語対応させます。
             correct_words = generate_correct_sentence(llm, latest_goal)
             st.session_state.correct_words = correct_words
 
