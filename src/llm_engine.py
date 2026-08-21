@@ -120,7 +120,7 @@ Output ONLY the text with '|'. No explanation.
         response = client_obj.models.generate_content(
             model=MODEL_NAME,
             contents=prompt,
-            config=types.GenerateContentConfig(temperature=0.1, max_output_tokens=80)
+            config=types.GenerateContentConfig(temperature=0.1, max_output_tokens=300)  # ← 80→300に拡張
         )
         sentence = response.text.strip().strip('"\'')
     except Exception as e:
@@ -134,6 +134,7 @@ Output ONLY the text with '|'. No explanation.
         
     log_event("generate_correct_sentence", {"goal": japanese_goal, "src": src_lang, "tgt": tgt_lang}, {"chunks": words})
     return words
+
 
 def recalculate_correct_sentence(client_obj, japanese_goal, current_sentence_words):
     src_lang, tgt_lang = _get_langs()
@@ -155,7 +156,7 @@ Typed: {current_str}
         response = client_obj.models.generate_content(
             model=MODEL_NAME,
             contents=prompt,
-            config=types.GenerateContentConfig(temperature=0.2, max_output_tokens=80)
+            config=types.GenerateContentConfig(temperature=0.2, max_output_tokens=300)  # ← 80→300に拡張
         )
         sentence = response.text.strip().strip('"\'')
     except Exception as e:
