@@ -1,45 +1,19 @@
+# -*- coding: utf-8 -*-
 import sys
 import logging
-import asyncio
 import streamlit as st
 
-st.set_page_config(page_title="WordFlow English", page_icon="🧩", layout="wide")
+st.set_page_config(
+    page_title="WordFlow English",
+    page_icon="🧩",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+)
 
-st.markdown("""
-<style>
-.st-emotion-cache-1wqtbno { display: none !important; }
-.stApp { background-color: #e2e8f0 !important; }
+# ★ レイアウト用CSSはここに集約（中身は responsive.py）。この2行が唯一の追加点。
+from responsive import inject_responsive_css
 
-.block-container {
-    max-width: 450px !important;
-    margin: 30px auto !important;
-    background-color: #ffffff !important;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
-    border-radius: 20px !important; 
-    padding: 2rem 1.5rem !important;
-}
-
-h3 { font-size: 18px !important; margin-bottom: -10px !important; }
-div[data-testid="stVerticalBlock"] > div { gap: 0.5rem !important; }
-
-/* 📱 columnsを常に横並びに固定（flex-direction上書きが核心） */
-div[data-testid="stHorizontalBlock"] {
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    align-items: center !important;
-    gap: 0.4rem !important;
-}
-div[data-testid="stHorizontalBlock"] > div[data-testid="stVerticalBlock"] {
-    min-width: 0 !important;
-    width: 100% !important;
-    flex: 1 1 0px !important;
-}
-div[data-testid="stSelectbox"] label,
-div[data-testid="stSelectbox"] div {
-    font-size: 13px !important;
-}
-</style>
-""", unsafe_allow_html=True)
+inject_responsive_css()
 
 from src.state_manager import init_session_state
 from src.llm_engine import load_model
@@ -54,7 +28,11 @@ llm = load_model()
 
 # 最初の画面だけタイトルを表示（二重表示防止）
 if st.session_state.step == 0:
-    st.markdown("<h1 style='text-align: center; font-size: 32px;'>🧩 WordFlow English</h1>", unsafe_allow_html=True)
+    st.markdown(
+        "<h1 style='text-align:center;font-size:clamp(24px,7vw,32px);margin-bottom:0.2rem;'>"
+        "🧩 WordFlow English</h1>",
+        unsafe_allow_html=True,
+    )
     goal_ui.render_input_form(llm)
 
 elif st.session_state.step == 1:
